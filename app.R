@@ -23,8 +23,8 @@ library(plotly)
 
 # data: https://www.kaggle.com/cgurkan/airplane-crash-data-since-1908/download
 
-#setwd("C:\\Users\\Nigel\\Google Drive\\Classes\\data-vis-math-2270\\assignment3\\Airplane-Crashes")
-setwd("C:\\Users\\kychi\\google-drive\\Classes\\data-vis-math-2270\\assignment3\\Airplane-Crashes")
+setwd("C:\\Users\\Nigel\\Google Drive\\Classes\\data-vis-math-2270\\assignment3\\HistoryOfAviationCrashes")
+#setwd("C:\\Users\\kychi\\google-drive\\Classes\\data-vis-math-2270\\assignment3\\HistoryOfAviationCrashes")
 
 if(FALSE) {
     # register_google(key = "[your key]")
@@ -73,7 +73,7 @@ icon.default.color <- "black"
 icon.spec.color <- "#FFFFFF"
 
 # Remove repeated ground fatality measurement for 9/11
-data[data$Registration %in% c("N612UA"),"Ground"] <- 0
+data[data$Registration %in% c("N334AA"),"Ground"] <- 0
 
 data <- data %>%
     drop_na(lat) %>% 
@@ -96,7 +96,7 @@ data <- data %>%
            MilitaryFG=ifelse(grepl("military", tolower(Operator)), Fatalities+Ground, 0),
            HistoricCivFG=0,
            HistoricMilFG=0,
-           DatedSummary=sprintf("%s: %s", Date, Summary))
+           DatedSummary=sprintf("%s: %s Passenger and Crew Fatalitiles: %s, Ground Fatalities: %d", Date, Summary, ifelse(Fatalities>0,as.character(Fatalities),"Not Available"), Ground))
 
 data[data$Registration %in% hist.civ.vector,"color"] <- map.spec.civ.color
 data[data$Registration %in% hist.civ.vector,"icon.color"] <- icon.spec.color
@@ -177,20 +177,19 @@ add.markers <- function(p, y.max) {
     p <- add.marker(p, 2001, y.max*1.05, "War in Afghanistan Begins", mil.spec.color)
     event.lines <- append(event.lines, list(make.line(2001,y.max*1.05, 2019,y.max*1.05,mil.spec.color)))
     
-    p <- add.marker(p, 2003, y.max, "Iraq War Begins", mil.spec.color)
+    p <- add.marker(p, 2003, y.max, "\n1.Iraq War Begins\n2.Iran Ilyushin Il-76 Crash", mil.spec.color)
     event.lines <- append(event.lines, list(make.line(2003,y.max,2011,y.max,mil.spec.color)))
     p <- add.marker(p, 2011, y.max, "Iraq War Ends", mil.spec.color)
     
     # Military Event Markers
     p <- add.marker(p, 1968, y.max, "Kham Duc C-130 Shootdown", mil.spec.color)
     p <- add.marker(p, 1992, y.max, "\n1.Nigerian Air Force C-130 Crash\n2.Libyan Air Force/Airlines Collision", mil.spec.color)
-    p <- add.marker(p, 2003, y.max, "Iran Ilyushin Il-76 Crash", mil.spec.color)
     p <- add.marker(p, 2018, y.max, "Algerian Air Force Ilyushin Il-76 Crash", mil.spec.color)
     
     # Civillian Event Markers
     p <- add.marker(p, 1974, y.max, "Turkish Airlines Flight 981", civ.spec.color)
     p <- add.marker(p, 1977, y.max, "Tenerife Airport Disaster", civ.spec.color)
-    p <- add.marker(p, 1985, y.max, "\n1.Japan Airlines Flight 123,\n2.Air India Flight 182", civ.spec.color)
+    p <- add.marker(p, 1985, y.max, "\n1.Japan Airlines Flight 123\n2.Air India Flight 182", civ.spec.color)
     p <- add.marker(p, 1996, y.max, "Charkhi Dadri Mid-Air Collision", civ.spec.color)
     p <- add.marker(p, 2001, y.max, "9/11 Terrorist Attacks", civ.spec.color)
     
@@ -257,14 +256,14 @@ title <- tags$div(
     tag.map.title, HTML("History of Aviation Crashes")
 ) 
 
-# Define server logic required to draw a histogram
+# Define server logic
 server <- function(input, output) {
     show_info <- 0
     # Base Map
     output$map <- renderLeaflet({
         leaflet(data) %>% 
             addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
-            setView(lat = 0, lng = 0, zoom = 2) %>%
+            setView(lat = 39.2904, lng = -76.6122, zoom = 7) %>%
             addControl(title, position = "topleft", className="map-title")
     })
     
@@ -276,13 +275,27 @@ server <- function(input, output) {
     
     # Filter data by year
     data.reactive <- reactive({
-        data %>%
-            filter(year == input$year)
+      if(is.na(input$year) || input$year<min(data$year)) {
+        y <- min(data$year)
+      } else if(input$year>max(data$year)) {
+        y <- max(data$year)
+      } else {
+        y <- input$year
+      }
+        
+      data %>%
+          filter(year == y)
     })
     
     # year
     year.reactive <- reactive({
-        input$year
+        if(is.na(input$year) || input$year<min(data$year)) {
+          min(data$year)
+        } else if(input$year>max(data$year)) {
+          max(data$year)
+        } else {
+          input$year
+        }
     })
     
     # Crash count Time Series Plot
@@ -325,7 +338,7 @@ server <- function(input, output) {
             y.max <- max(plot.data$Military+plot.data$Civillian+plot.data$Historic.Military+plot.data$Historic.Civilian)
         }
         
-        year.line <- make.line(year.reactive(), 0, year.reactive(), y.max, "black")
+        year.line <- make.line(year.reactive(), 0, year.reactive(), y.max*1.09, "black")
         
         result <- add.markers(p, y.max+y.max*0.1)
         p <- result[[1]]
@@ -373,19 +386,15 @@ server <- function(input, output) {
     })
     
     # Infor Panel Button
-    show_info_flag <- reactive({input$checkbox})
+    show_info_flag <- reactive({input$midpanel})
     output[["info_panel"]] <- renderUI({
-        if(show_info_flag()){
-            absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =920, height=600, id = "info_panel", 
+        if(show_info_flag()==3){
+            absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =920, height=475, id = "info_panel", 
                           style="border-radius: 25px;
                          padding: 8px; 
                          border-bottom: 2px solid #CCC;
                          background: rgba(255,255,255,0.75);",
-                          h3("Timeline Information"),
-                          p("Historical Military and Civilian events hightlighted in the plot below typically show the 5 crashes with the most fatalities in each category."),
-                          p("Additionally, major military conflicts are marked as a timeline, however, indivudual events that are part of it are not highlighted."),
-                          h3("About the Data"),
-                          p("The aviation accident database includes: "),
+                          h3("Data Inclusions"),
                           p("1. All civil and commercial aviation accidents of scheduled and non-scheduled passenger airliners worldwide, which resulted in a fatality (including all U.S. Part 121 and Part 135 fatal accidents)"),
                           p("2. All cargo, positioning, ferry and test flight fatal accidents."),
                           p("3. All military transport accidents with 10 or more fatalities."),
@@ -401,8 +410,44 @@ server <- function(input, output) {
         } else {
             return()
         }
-
-        
+    })
+    
+    # Intro Panel Button
+    output[["intro_panel"]] <- renderUI({
+      if(show_info_flag()==2){
+        absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =920, height=525, id = "intro_panel", 
+                      style="border-radius: 25px;
+                         padding: 8px; 
+                         border-bottom: 2px solid #CCC;
+                         background: rgba(255,255,255,0.75);",
+                    h3("Introduction"),
+                    p("It wasn't until as recently as the past 20 years that a clear downward trend in number 
+                    of crashes began to emerge. Be it mechanical malfunctions, weather, war or human error, 
+                    the plane crashes of history helped to shape aviation safety as we know it today. 
+                    As the saying goes in aviation, regulations are written in blood. 
+                    It is important that we remember the path that we have taken to get to where we are today."),
+                    p("In 2018, commercial airlines transported a total of 4.3 billion passengers across the globe 
+                    according to the International Civil Aviation Organization (2018), with only 11 fatal crashes. 
+                    More passengers than ever are travelling by air and yet, the last time the number civilian of 
+                    fatal crashes was as low was in 1926. It should come as no surprise then that the Washington 
+                    Post (2015) reported flying as the safest method of travel per unit distance travelled. "),
+                    h3("Timeline Information"),
+                    p("The black line on the plot shows the year that you are currently viewing. 
+                          Set the year to one that interests you and click on the map markers for more information.
+                          Historical Military and Civilian events hightlighted in the plot (red and blue dots) 
+                            below typically show the crashes with the most fatalities in each category. 
+                            Major military conflicts are highlighted (red dots with lines).
+                            However, individual events that are part of it are not.
+                            This visualization was designed on a 1920x1080 resolution screen.
+                            "),
+                    h3("Sources"),
+                    p("1. The World of Air Transport in 2018. (2019). Retrieved 13 October 2019, from 
+                      https://www.icao.int/annual-report-2018/Pages/the-world-of-air-transport-in-2018.aspx"),
+                    p("2. Ingraham, C. (2019). The safest - and deadliest - ways to travel. Retrieved 13 October 2019, 
+                      from https://www.washingtonpost.com/news/wonk/wp/2015/05/14/the-safest-and-deadliest-ways-to-travel/"))
+      } else {
+        return()
+      }
     })
 }
 
@@ -413,10 +458,8 @@ server <- function(input, output) {
 ui <- bootstrapPage(
     tags$style(type = "text/css", "html, 
                body {width:100%;height:100%;}
-               #year_slider {text-align: center;}
                #info_panel {margin: 5% auto auto auto;}
-               .irs.js-irs-0.irs-with-grid {left: 4%}
-               .control-label {left: 4%}"),
+               #intro_panel {margin: 5% auto auto auto;}"),
     leafletOutput("map", width = "100%", height = "100%"),
     # Time Series
     absolutePanel(bottom = 15, left = 10, width ="98%", height = 300,
@@ -425,15 +468,7 @@ ui <- bootstrapPage(
                          border-bottom: 2px solid #CCC;
                          background: rgba(255,255,255,0.75);
                          text-align: center;",
-                  plotlyOutput("ts",height="200px"),
-                  sliderInput("year", "",
-                              width ="88%",
-                              min = min(data$year),
-                              max = max(data$year),
-                              value = min(data$year),
-                              step = 1,
-                              sep = ""),
-                  id="year_slider"
+                  plotlyOutput("ts",height="100%")
     ),
     # Plot Options
     absolutePanel(bottom = 320, left = 10, width =285, height=115,
@@ -446,7 +481,7 @@ ui <- bootstrapPage(
                                choices = list("Crashes" = 1,
                                               "Passenger and Crew Fatalities" = 2,
                                               "Passenger, Crew and Ground Fatalities" = 3),
-                               selected = 1)),
+                               selected = 3)),
     # Plot Data
     absolutePanel(bottom = 440, left = 10, width =100, height=115,
                   style="border-radius: 25px;
@@ -457,17 +492,34 @@ ui <- bootstrapPage(
                                label = "Select Data:",
                                choices = list("Both" = 1,"Military" = 2, "Civilian"=3),
                                selected = 1)),
-    # Show Hide Buttoon
-    absolutePanel(right = 25, bottom = 320, width = 200, height = 60,
+    # Plot Year
+    absolutePanel(bottom = 440, left = 120, width =100, height=85,
                   style="border-radius: 25px;
                          padding: 8px; 
                          border-bottom: 2px solid #CCC;
                          background: rgba(255,255,255,0.75);",
-                  checkboxInput("checkbox", label = "Show Information Panel", value = TRUE)),
-    
+                  numericInput("year", 
+                               label = "Input Year:", 
+                               value = 2001,
+                               min = min(data$year),
+                               max = max(data$year),
+                               step = 1)),
+    # Show Hide Button
+    absolutePanel(right = 25, bottom = 320, width = 200, height = 110,
+                  style="border-radius: 25px;
+                         padding: 8px; 
+                         border-bottom: 2px solid #CCC;
+                         background: rgba(255,255,255,0.75);",
+                  radioButtons("midpanel",
+                               label = "Show Information Panel:",
+                               choices = list("None" = 1,
+                                              "Introduction" = 2,
+                                              "Data Sources" = 3),
+                               selected = 2)),
     # Information Panel
-    uiOutput("info_panel")
-    
+    uiOutput("info_panel"),
+    # Intro Panel
+    uiOutput("intro_panel")
 )
 
 # Run the application 
