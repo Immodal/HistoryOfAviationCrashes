@@ -422,7 +422,7 @@ server <- function(input, output) {
                          background: rgba(255,255,255,0.75);",
                     h3("Introduction"),
                     p("It wasn't until as recently as the past 20 years that a clear downward trend in number 
-                    of crashes began to emerge. Be it mechanical malfunctions, weather, war or human error, 
+                    of fatal crashes began to emerge. Be it mechanical malfunctions, weather, war or human error, 
                     the plane crashes of history helped to shape aviation safety as we know it today. 
                     As the saying goes in aviation, regulations are written in blood. 
                     It is important that we remember the path that we have taken to get to where we are today."),
@@ -441,9 +441,9 @@ server <- function(input, output) {
                             This visualization was designed on a 1920x1080 resolution screen.
                             "),
                     h3("Sources"),
-                    p("1. The World of Air Transport in 2018. (2019). Retrieved 13 October 2019, from 
+                    p("1. The World of Air Transport in 2018. (2018). Retrieved 13 October 2019, from 
                       https://www.icao.int/annual-report-2018/Pages/the-world-of-air-transport-in-2018.aspx"),
-                    p("2. Ingraham, C. (2019). The safest - and deadliest - ways to travel. Retrieved 13 October 2019, 
+                    p("2. Ingraham, C. (2015). The safest - and deadliest - ways to travel. Retrieved 13 October 2019, 
                       from https://www.washingtonpost.com/news/wonk/wp/2015/05/14/the-safest-and-deadliest-ways-to-travel/"))
       } else {
         return()
