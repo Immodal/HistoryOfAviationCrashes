@@ -41,9 +41,9 @@ if(FALSE) {
     
     #write_csv(data[is.na(data$lon),], "crashes_na.csv")
     #write_csv(data, "crashes_processed.csv")
-} else {
-    data <- read_csv("crashes_processed.csv")
 }
+
+data <- read_csv("crashes_processed.csv")
 
 # Registration for Special Historic Events
 hist.civ.vector <- c("N736PA/PH-BUF","JA8119","HZ-AIH/UN-76435", "TC-JAV", "VT-EFO")
@@ -84,15 +84,15 @@ data <- data %>%
                                map.mil.color, 
                                map.civ.color),
            icon.color= icon.default.color,
-           Civillian=ifelse(grepl("military", tolower(Operator)),FALSE, TRUE),
+           Civilian=ifelse(grepl("military", tolower(Operator)),FALSE, TRUE),
            Military=grepl("military", tolower(Operator)),
            HistoricCiv=FALSE,
            HistoricMil=FALSE,
-           CivillianF=ifelse(grepl("military", tolower(Operator)), 0, Fatalities),
+           CivilianF=ifelse(grepl("military", tolower(Operator)), 0, Fatalities),
            MilitaryF=ifelse(grepl("military", tolower(Operator)), Fatalities, 0),
            HistoricCivF=0,
            HistoricMilF=0,
-           CivillianFG=ifelse(grepl("military", tolower(Operator)), 0, Fatalities+Ground),
+           CivilianFG=ifelse(grepl("military", tolower(Operator)), 0, Fatalities+Ground),
            MilitaryFG=ifelse(grepl("military", tolower(Operator)), Fatalities+Ground, 0),
            HistoricCivFG=0,
            HistoricMilFG=0,
@@ -106,10 +106,10 @@ data[data$Registration %in% hist.mil.vector,"icon.color"] <- icon.spec.color
 
 # Move stats for historic events into histric columns
 data[data$Registration %in% hist.civ.vector,"HistoricCiv"] <- TRUE
-data[(data$Registration %in% hist.civ.vector) & (data$Civillian==TRUE),"HistoricCivF"] <- data[(data$Registration %in% hist.civ.vector) & (data$Civillian==TRUE),"CivillianF"]
-data[(data$Registration %in% hist.civ.vector) & (data$Civillian==TRUE),"CivillianF"] <- 0
-data[(data$Registration %in% hist.civ.vector) & (data$Civillian==TRUE),"HistoricCivFG"] <- data[(data$Registration %in% hist.civ.vector) & (data$Civillian==TRUE),"CivillianFG"]
-data[(data$Registration %in% hist.civ.vector) & (data$Civillian==TRUE),"CivillianFG"] <- 0
+data[(data$Registration %in% hist.civ.vector) & (data$Civilian==TRUE),"HistoricCivF"] <- data[(data$Registration %in% hist.civ.vector) & (data$Civilian==TRUE),"CivilianF"]
+data[(data$Registration %in% hist.civ.vector) & (data$Civilian==TRUE),"CivilianF"] <- 0
+data[(data$Registration %in% hist.civ.vector) & (data$Civilian==TRUE),"HistoricCivFG"] <- data[(data$Registration %in% hist.civ.vector) & (data$Civilian==TRUE),"CivilianFG"]
+data[(data$Registration %in% hist.civ.vector) & (data$Civilian==TRUE),"CivilianFG"] <- 0
 
 data[data$Registration %in% hist.mil.vector,"HistoricMil"] <- TRUE
 data[(data$Registration %in% hist.mil.vector) & (data$Military==TRUE),"HistoricMilF"] <- data[(data$Registration %in% hist.mil.vector) & (data$Military==TRUE),"MilitaryF"]
@@ -124,21 +124,21 @@ data[data$Registration %in% c("N334AA"),"lon"] <- -74.001
 data.ts <- data %>%
     group_by(year) %>%
     summarise(Military=sum(Military),
-              Civillian=sum(Civillian),
+              Civilian=sum(Civilian),
               Historic.Military=sum(HistoricMil),
               Historic.Civilian=sum(HistoricCiv))
 
 data.ts2 <- data %>%
     group_by(year) %>%
     summarise(Military=sum(MilitaryF),
-              Civillian=sum(CivillianF),
+              Civilian=sum(CivilianF),
               Historic.Military=sum(HistoricMilF),
               Historic.Civilian=sum(HistoricCivF))
 
 data.ts3 <- data %>%
     group_by(year) %>%
     summarise(Military=sum(MilitaryFG),
-              Civillian=sum(CivillianFG),
+              Civilian=sum(CivilianFG),
               Historic.Military=sum(HistoricMilFG),
               Historic.Civilian=sum(HistoricCivFG))
 
@@ -186,7 +186,7 @@ add.markers <- function(p, y.max) {
     p <- add.marker(p, 1992, y.max, "\n1.Nigerian Air Force C-130 Crash\n2.Libyan Air Force/Airlines Collision", mil.spec.color)
     p <- add.marker(p, 2018, y.max, "Algerian Air Force Ilyushin Il-76 Crash", mil.spec.color)
     
-    # Civillian Event Markers
+    # Civilian Event Markers
     p <- add.marker(p, 1974, y.max, "Turkish Airlines Flight 981", civ.spec.color)
     p <- add.marker(p, 1977, y.max, "Tenerife Airport Disaster", civ.spec.color)
     p <- add.marker(p, 1985, y.max, "\n1.Japan Airlines Flight 123\n2.Air India Flight 182", civ.spec.color)
@@ -320,22 +320,22 @@ server <- function(input, output) {
             y.max <- max(plot.data$Military+plot.data$Historic.Military)
         } else if(plot.data.choice()==3) {
             p <- plot_ly(data=plot.data,
-                         x=~year, y=~Civillian,
+                         x=~year, y=~Civilian,
                          name="Civilian", type = 'bar', marker = list(color = civ.color)) %>%
                 add_trace(p, data=plot.data, y = ~Historic.Civilian, 
                           name="Historic Civilian", marker = list(color =civ.spec.color))
-            y.max <- max(plot.data$Civillian+plot.data$Historic.Civilian)
+            y.max <- max(plot.data$Civilian+plot.data$Historic.Civilian)
         } else {
             p <- plot_ly(data=plot.data, 
                          x=~year, y=~Military, 
                          name="Military", type = 'bar', marker = list(color = mil.color))  %>%
                 add_trace(p, data=plot.data, y = ~Historic.Military, 
                           name="Historic Military", marker = list(color =mil.spec.color)) %>%
-                add_trace(p, data=plot.data, y = ~Civillian, 
+                add_trace(p, data=plot.data, y = ~Civilian, 
                           name="Civilian", marker = list(color =civ.color)) %>%
                 add_trace(p, data=plot.data, y = ~Historic.Civilian, 
                           name="Historic Civilian", marker = list(color =civ.spec.color))
-            y.max <- max(plot.data$Military+plot.data$Civillian+plot.data$Historic.Military+plot.data$Historic.Civilian)
+            y.max <- max(plot.data$Military+plot.data$Civilian+plot.data$Historic.Military+plot.data$Historic.Civilian)
         }
         
         year.line <- make.line(year.reactive(), 0, year.reactive(), y.max*1.09, "black")
@@ -363,7 +363,7 @@ server <- function(input, output) {
                 filter(Military==TRUE)
         } else if(plot.data.choice()==3) {
             m.data <- data.reactive() %>% 
-                filter(Civillian==TRUE)
+                filter(Civilian==TRUE)
         } else {
             m.data <- data.reactive()
         }
@@ -415,35 +415,41 @@ server <- function(input, output) {
     # Intro Panel Button
     output[["intro_panel"]] <- renderUI({
       if(show_info_flag()==2){
-        absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =920, height=525, id = "intro_panel", 
+        absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =920, height=610, id = "intro_panel", 
                       style="border-radius: 25px;
                          padding: 8px; 
                          border-bottom: 2px solid #CCC;
                          background: rgba(255,255,255,0.75);",
                     h3("Introduction"),
-                    p("It wasn't until as recently as the past 20 years that a clear downward trend in number 
-                    of fatal crashes began to emerge. Be it mechanical malfunctions, weather, war or human error, 
-                    the plane crashes of history helped to shape aviation safety as we know it today. 
-                    As the saying goes in aviation, regulations are written in blood. 
-                    It is important that we remember the path that we have taken to get to where we are today."),
                     p("In 2018, commercial airlines transported a total of 4.3 billion passengers across the globe 
-                    according to the International Civil Aviation Organization (2018), with only 11 fatal crashes. 
-                    More passengers than ever are travelling by air and yet, the last time the number civilian of 
-                    fatal crashes was as low was in 1926. It should come as no surprise then that the Washington 
-                    Post (2015) reported flying as the safest method of travel per unit distance travelled. "),
+                    according to the International Civil Aviation Organization (2018). 
+                    That's 37 million flight departures (Air transport, 2019), with only 11 fatal crashes, a total of 0.00002%.
+                    More passengers than ever are travelling by air and yet, this number civilian of 
+                    fatal crashes matches the number of crashes in 1926. It should come as no surprise then that the Washington 
+                    Post (2015) reported flying as the safest method of travel per unit distance travelled. 
+                    There has been a clear downward trend in the raw number of fatal crashes over the years, in spite of
+                    the exponential growth in popularity of air travel over the past few decades."),
+                    p("It is still important that we remember the path that we have taken to get to where we are today. 
+                    Be it mechanical malfunctions, weather, war or human error, 
+                    the plane crashes of history helped to shape aviation safety as we know it. 
+                    As the saying goes in aviation, regulations are written in blood. 
+                    "),
                     h3("Timeline Information"),
                     p("The black line on the plot shows the year that you are currently viewing. 
                           Set the year to one that interests you and click on the map markers for more information.
-                          Historical Military and Civilian events hightlighted in the plot (red and blue dots) 
+                          Historical Military and Civilian events hightlighted in the plot (orange and light blue dots) 
                             below typically show the crashes with the most fatalities in each category. 
-                            Major military conflicts are highlighted (red dots with lines).
+                            Major military conflicts are highlighted (orange dots with lines).
                             However, individual events that are part of it are not.
                             This visualization was designed on a 1920x1080 resolution screen.
                             "),
+                    p("Set the \"Show Information Panel\" radio button on the right to \"None\" to close this popup and begin exploring."),
                     h3("Sources"),
                     p("1. The World of Air Transport in 2018. (2018). Retrieved 13 October 2019, from 
                       https://www.icao.int/annual-report-2018/Pages/the-world-of-air-transport-in-2018.aspx"),
-                    p("2. Ingraham, C. (2015). The safest - and deadliest - ways to travel. Retrieved 13 October 2019, 
+                    p("2. Air transport, registered carrier departures worldwide | Data. (2019).
+                      Retrieved 17 October 2019, from https://data.worldbank.org/indicator/IS.AIR.DPRT"),
+                    p("3. Ingraham, C. (2015). The safest - and deadliest - ways to travel. Retrieved 13 October 2019, 
                       from https://www.washingtonpost.com/news/wonk/wp/2015/05/14/the-safest-and-deadliest-ways-to-travel/"))
       } else {
         return()
