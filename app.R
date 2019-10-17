@@ -393,7 +393,7 @@ server <- function(input, output) {
                           style="border-radius: 25px;
                          padding: 8px; 
                          border-bottom: 2px solid #CCC;
-                         background: rgba(255,255,255,0.75);",
+                         background: rgba(255,255,255,0.9);",
                           h3("Data Inclusions"),
                           p("1. All civil and commercial aviation accidents of scheduled and non-scheduled passenger airliners worldwide, which resulted in a fatality (including all U.S. Part 121 and Part 135 fatal accidents)"),
                           p("2. All cargo, positioning, ferry and test flight fatal accidents."),
@@ -419,7 +419,7 @@ server <- function(input, output) {
                       style="border-radius: 25px;
                          padding: 8px; 
                          border-bottom: 2px solid #CCC;
-                         background: rgba(255,255,255,0.75);",
+                         background: rgba(255,255,255,0.9);",
                     h3("Introduction"),
                     p("In 2018, commercial airlines transported a total of 4.3 billion passengers across the globe 
                     according to the International Civil Aviation Organization (2018). 
