@@ -23,7 +23,7 @@ library(plotly)
 
 # data: https://www.kaggle.com/cgurkan/airplane-crash-data-since-1908/download
 
-setwd("C:\\Users\\Nigel\\Google Drive\\Classes\\data-vis-math-2270\\assignment3\\HistoryOfAviationCrashes")
+#setwd("C:\\Users\\Nigel\\Google Drive\\Classes\\data-vis-math-2270\\assignment3\\HistoryOfAviationCrashes")
 #setwd("C:\\Users\\kychi\\google-drive\\Classes\\data-vis-math-2270\\assignment3\\HistoryOfAviationCrashes")
 
 if(FALSE) {
@@ -358,6 +358,9 @@ server <- function(input, output) {
     
     # Place filtered markers
     observe({
+        # This line is to get around the markers not showing initially when
+        # the map first loads
+        show_info_flag() 
         if(plot.data.choice()==2) {
             m.data <- data.reactive() %>% 
                 filter(Military==TRUE)
@@ -385,11 +388,11 @@ server <- function(input, output) {
         }
     })
     
-    # Infor Panel Button
+    # Information Panel Button
     show_info_flag <- reactive({input$midpanel})
     output[["info_panel"]] <- renderUI({
         if(show_info_flag()==3){
-            absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =920, height=475, id = "info_panel", 
+            absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =950, height=475, id = "info_panel", 
                           style="border-radius: 25px;
                          padding: 8px; 
                          border-bottom: 2px solid #CCC;
@@ -415,7 +418,7 @@ server <- function(input, output) {
     # Intro Panel Button
     output[["intro_panel"]] <- renderUI({
       if(show_info_flag()==2){
-        absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =920, height=610, id = "intro_panel", 
+        absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =950, height=610, id = "intro_panel", 
                       style="border-radius: 25px;
                          padding: 8px; 
                          border-bottom: 2px solid #CCC;
