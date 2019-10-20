@@ -6,6 +6,8 @@ It is still important that we remember the path that we have taken to get to whe
  
 This Shiny app encourages the user to travel through time and read about some of the deadliest crashes in history. 
 
+Link to App: https://immodal.shinyapps.io/HistoryOfAviationCrashes/
+
 ![example](docs/example.jpg?raw=true "example")
 
 ## Data Inclusions
