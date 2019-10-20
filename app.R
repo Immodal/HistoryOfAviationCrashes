@@ -392,11 +392,12 @@ server <- function(input, output) {
     show_info_flag <- reactive({input$midpanel})
     output[["info_panel"]] <- renderUI({
         if(show_info_flag()==3){
-            absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =950, height=475, id = "info_panel", 
+            absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width ="60%", height="45%", id = "info_panel", draggable = TRUE,
                           style="border-radius: 25px;
                          padding: 8px; 
                          border-bottom: 2px solid #CCC;
-                         background: rgba(255,255,255,0.9);",
+                         background: rgba(255,255,255,0.9);
+                         overflow-y:scroll;",
                           h3("Data Inclusions"),
                           p("1. All civil and commercial aviation accidents of scheduled and non-scheduled passenger airliners worldwide, which resulted in a fatality (including all U.S. Part 121 and Part 135 fatal accidents)"),
                           p("2. All cargo, positioning, ferry and test flight fatal accidents."),
@@ -418,11 +419,12 @@ server <- function(input, output) {
     # Intro Panel Button
     output[["intro_panel"]] <- renderUI({
       if(show_info_flag()==2){
-        absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width =950, height=610, id = "intro_panel", 
+        absolutePanel(top = 0, left = 0, right = 0, bottom = 0, width ="60%", height="45%", id = "intro_panel", draggable = TRUE,
                       style="border-radius: 25px;
                          padding: 8px; 
                          border-bottom: 2px solid #CCC;
-                         background: rgba(255,255,255,0.9);",
+                         background: rgba(255,255,255,0.9);
+                         overflow-y:scroll;",
                     h3("Introduction"),
                     p("In 2018, commercial airlines transported a total of 4.3 billion passengers across the globe 
                     according to the International Civil Aviation Organization (2018). 
